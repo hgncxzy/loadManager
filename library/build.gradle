@@ -1,0 +1,33 @@
+apply from: "../lib.gradle"
+android {
+    compileSdkVersion buildConfig.compileSdk
+
+    defaultConfig {
+        resourcePrefix "load_"
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // test
+    testImplementation deps.kotlin.junit
+    testImplementation deps.test.mockk
+    testImplementation deps.test.robolectric
+    testImplementation deps.androidx.test.coreKtx
+    testImplementation deps.androidx.test.runner
+    testImplementation deps.androidx.test.rules
+    testImplementation deps.androidx.test.junitKtx
+
+    // android test
+    androidTestImplementation deps.kotlin.junit
+    androidTestImplementation deps.androidx.test.junitKtx
+    androidTestImplementation deps.androidx.test.coreKtx
+    androidTestImplementation deps.androidx.test.runner
+    androidTestImplementation deps.androidx.test.rules
+    androidTestUtil deps.androidx.test.orchestrator
+
+    // main
+    implementation deps.kotlin.stdlib
+    implementation deps.androidx.lifecycle
+}

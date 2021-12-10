@@ -1,0 +1,20 @@
+apply from :"../sample.gradle"
+android {
+    defaultConfig {
+        applicationId "com.xzy.load.manager.sample"
+    }
+
+    viewBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    debugImplementation deps.leakcanary
+
+    implementation project(':library')
+    implementation deps.kotlin.stdlib
+    implementation deps.androidx.appcompat
+    implementation deps.androidx.constraintlayout
+}

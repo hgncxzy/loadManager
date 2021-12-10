@@ -1,0 +1,26 @@
+// app 版本名采用 GNU 风格，主版本号.子版本号.修正版本号.变更版本数(版本节点 hash)，例如 1.2.10.1907(b7cb9608)
+ext.appVersionName = { ->
+    return "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}.${gitCommitCount()}(${gitCommitHash()})"
+}
+
+// lib 版本名采用 GNU 风格，主版本号.子版本号.修正版本号，例如 1.2.10
+ext.libVersionName = { ->
+    return "${buildConfig.version.major}.${buildConfig.version.minor}.${buildConfig.version.patch}"
+}
+
+// 版本号由版本名映射，主版本号 * 10000 + 子版本号 * 100 + 修正版本号，例如 1.2.10 -> 10210
+ext.versionCode = { ->
+    return buildConfig.version.major * 10000 + buildConfig.version.minor * 100 + buildConfig.version.patch
+}
+
+// 获取当前 git 节点提交数
+static def gitCommitCount() {
+    String cmd = 'git rev-list HEAD --count'
+    return cmd.execute().text.trim()
+}
+
+// 获取当前 git 节点的哈希值
+static def gitCommitHash() {
+    String cmd = 'git rev-parse --short HEAD'
+    return cmd.execute().text.trim()
+}

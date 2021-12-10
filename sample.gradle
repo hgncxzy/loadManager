@@ -1,0 +1,137 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+
+android {
+    compileSdkVersion buildConfig.compileSdk
+
+    defaultConfig {
+        minSdkVersion buildConfig.minSdk
+        targetSdkVersion buildConfig.targetSdk
+        versionCode buildConfig.version.code
+        versionName buildConfig.version.name
+        multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testBuildType "debug"
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/notice'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/dependencies'
+        exclude 'META-INF/LGPL2.1'
+        exclude 'META-INF/AL2.0'
+        exclude 'DebugProbesKt.bin'
+    }
+
+    lintOptions {
+        // Turns off checks for the issue IDs you specify.
+        disable 'TypographyFractions', 'TypographyQuotes'
+        // Turns on checks for the issue IDs you specify. These checks are in
+        // addition to the default lint checks.
+        enable 'RtlHardcoded', 'RtlCompat', 'RtlEnabled'
+        // To enable checks for only a subset of issue IDs and ignore all others,
+        // list the issue IDs with the 'check' property instead. This property overrides
+        // any issue IDs you enable or disable using the properties above.
+        checkOnly 'NewApi', 'InlinedApi'
+        // If set to true, turns off analysis progress reporting by lint.
+        quiet true
+        // if set to true (default), stops the build if errors are found.
+        abortOnError false
+        // if true, only report errors.
+        ignoreWarnings true
+    }
+
+    sourceSets {
+        main {
+            // 主要代码目录
+            java.srcDirs += 'src/main/kotlin'
+        }
+        test {
+            // 单元测试目录
+            java.srcDirs += 'src/test/kotlin'
+        }
+        androidTest {
+            // 仪表测试目录
+            java.srcDirs += 'src/androidTest/kotlin'
+            assets.srcDirs += files("$projectDir/schemas".toString())
+        }
+    }
+
+    signingConfigs {
+        def keyProps = new Properties()
+
+        debug {
+            // 签名相关的资料已在 library 类型的模版项目中预置，不需要修改
+            keyProps.load(new FileInputStream(rootProject.file('signature/debug-keystore.properties')))
+            storeFile file(keyProps["storeFile"])
+            storePassword keyProps["storePass"]
+            keyAlias keyProps["keyAlias"]
+            keyPassword keyProps["keyPass"]
+        }
+
+        release {
+            // 签名相关的资料已在 library 类型的模版项目中预置，不需要修改
+            keyProps.load(new FileInputStream(rootProject.file('signature/release-keystore.properties')))
+            storeFile file(keyProps["storeFile"])
+            storePassword keyProps["storePass"]
+            keyAlias keyProps["keyAlias"]
+            keyPassword keyProps["keyPass"]
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug" // applicationId 后缀 ".debug"，用于区分测试包
+            versionNameSuffix "-debug" // 版本名后缀 "-debug"，用于区分测试包
+            signingConfig signingConfigs.debug
+            minifyEnabled false // 关闭代码缩减、混淆、优化功能
+            shrinkResources false // 关闭资源缩减功能
+            testCoverageEnabled true // 开启测试覆盖率统计
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        snapshot {
+            signingConfig signingConfigs.debug
+            minifyEnabled false // 关闭代码缩减、混淆、优化功能
+            shrinkResources false // 关闭资源缩减功能
+            testCoverageEnabled false // 关闭测试覆盖率统计
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true // 开启代码缩减、混淆、优化功能
+            shrinkResources true // 开启资源缩减功能
+            testCoverageEnabled false // 关闭测试覆盖率统计
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        encoding = "UTF-8"
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            // 输出的文件按照该规则进行命名
+            outputFileName = "${rootProject.name}-${variant.buildType.name}.apk"
+        }
+    }
+}

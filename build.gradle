@@ -1,0 +1,130 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    apply from : "ci.gradle"
+    ext.buildConfig = [
+            compileSdk: 30, // SDK 编译版本
+            minSdk    : 19, // 最小 SDK 版本
+            targetSdk : 30, // 目标 SDK 版本
+
+            version   : [
+                    major: 2, // 主版本号
+                    minor: 3, // 子版本号
+                    patch: 0, // 修正版本号
+            ],
+    ]
+
+    ext.buildConfig.version['name'] = libVersionName() // 版本名
+    ext.buildConfig.version['code'] = versionCode() // 版本号
+
+    ext.versions = [
+            plugin    : [
+                    android    : '7.0.2',
+                    artifactory: '4.24.14',
+                    ktlint     : '10.1.0',
+            ],
+            kotlin    : [
+                    stdlib   : '1.5.30',
+                    coroutine: '1.5.2',
+            ],
+            androidx  : [
+                    appcompat       : '1.3.0',
+                    constraintlayout: '2.1.0',
+                    lifecycle       : '2.3.1',
+                    test            : [
+                            base    : '1.4.0',
+                            junitKtx: '1.1.3',
+                    ],
+            ],
+            test       : [
+                    mockk      : '1.12.0',
+                    robolectric: '4.5.1',
+            ],
+            leakcanary: '2.7',
+    ]
+
+    ext.mavenUrl = [
+            aliyun : 'https://maven.aliyun.com/repository/public/',
+            google : 'https://maven.aliyun.com/repository/google/',
+            gradle : 'https://maven.aliyun.com/repository/gradle-plugin/',
+            central: 'https://maven.aliyun.com/repository/central',
+            kotlinx: 'https://kotlin.bintray.com/kotlinx',
+    ]
+
+    ext.deps = [
+            plugin     : [
+                    android    : "com.android.tools.build:gradle:${versions.plugin.android}",
+                    artifactory: "org.jfrog.buildinfo:build-info-extractor-gradle:${versions.plugin.artifactory}",
+                    kotlin     : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin.stdlib}",
+                    ktlint     : "org.jlleitschuh.gradle:ktlint-gradle:${versions.plugin.ktlint}",
+            ],
+            kotlin     : [
+                    stdlib   : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin.stdlib}",
+                    coroutine: "org.jetbrains.kotlinx:kotlinx-coroutines-android:${versions.kotlin.coroutine}",
+                    junit    : "org.jetbrains.kotlin:kotlin-test-junit:${versions.kotlin.stdlib}",
+            ],
+            androidx  : [
+                    appcompat       : "androidx.appcompat:appcompat:${versions.androidx.appcompat}",
+                    constraintlayout: "androidx.constraintlayout:constraintlayout:${versions.androidx.constraintlayout}",
+                    lifecycle       : "androidx.lifecycle:lifecycle-runtime-ktx:${versions.androidx.lifecycle}",
+                    test            : [
+                            coreKtx     : "androidx.test:core-ktx:${versions.androidx.test.base}",
+                            runner      : "androidx.test:runner:${versions.androidx.test.base}",
+                            rules       : "androidx.test:rules:${versions.androidx.test.base}",
+                            orchestrator: "androidx.test:orchestrator:${versions.androidx.test.base}",
+                            junitKtx    : "androidx.test.ext:junit-ktx:${versions.androidx.test.junitKtx}",
+                    ],
+            ],
+            test      : [
+                    mockk      : "io.mockk:mockk:${versions.test.mockk}",
+                    robolectric: "org.robolectric:robolectric:${versions.test.robolectric}",
+            ],
+            leakcanary: "com.squareup.leakcanary:leakcanary-android:${versions.leakcanary}",
+    ]
+
+    repositories {
+        maven { url mavenUrl.aliyun }
+        maven { url mavenUrl.google }
+        maven { url mavenUrl.gradle }
+        maven { url mavenUrl.kotlinx }
+    }
+
+    dependencies {
+        classpath deps.plugin.android
+        classpath deps.plugin.kotlin
+        classpath deps.plugin.ktlint
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    apply plugin: 'org.jlleitschuh.gradle.ktlint'
+
+    ktlint {
+        android = true
+    }
+
+    repositories {
+        maven { url mavenUrl.aliyun }
+        maven { url mavenUrl.google }
+        maven { url mavenUrl.gradle }
+        maven { url mavenUrl.central }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            eachDependency { details ->
+                // Force all Kotlin stdlib artifacts to use the same version.
+                if (details.requested.group == 'org.jetbrains.kotlin'
+                        && details.requested.name.startsWith('kotlin-stdlib')) {
+                    details.useVersion versions.kotlin.stdlib
+                }
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
